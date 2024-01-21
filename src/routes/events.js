@@ -1,4 +1,4 @@
-import e, { Router } from "express";
+import { Router } from "express";
 import createEvent from "../services/events/createEvent.js";
 import getEventById from "../services/events/getEventById.js";
 import getEvents from "../services/events/getEvents.js";
