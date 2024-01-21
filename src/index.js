@@ -9,7 +9,7 @@ import categoriesRouter from "../src/routes/categories.js";
 import loginRouter from "../src/routes/login.js";
 import log from "./middleware/log.js";
 //import jwtCheck from "./utils/jwtCheck.js";
-//import errorHandler from "./middleware/errorHandler.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 
@@ -58,10 +58,10 @@ console.log("login is called");
 //   res.send("Secured Resource");
 // });
 // The error handler must be registered before any other error middleware and after all controllers
-// app.use(Sentry.Handlers.errorHandler());
-// console.log("sentry error handler is called");
-// app.use(errorHandler);
-// console.log("app errorHandler is called");
+app.use(Sentry.Handlers.errorHandler());
+console.log("sentry error handler is called");
+app.use(errorHandler);
+console.log("app errorHandler is called");
 // Optional fallthrough error handler
 // app.use(function onError(err, req, res, next) {
 //   // The error id is attached to `res.sentry` to be returned
@@ -71,5 +71,5 @@ console.log("login is called");
 // });
 
 app.listen(3000, () => {
-  console.log(`Server is listening on port 3000, 16.35`);
+  console.log(`Server is listening on port 3000`);
 });
