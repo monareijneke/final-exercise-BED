@@ -1,35 +1,21 @@
-import eventData from "../../data/events.json" assert { type: "json" };
+import { PrismaClient } from "@prisma/client";
 
-const updateEventById = (id, updatedEvent) => {
-  const eventIndex = eventData.events.findIndex(event => event.id === id);
-
-  if (eventIndex === -1) {
-    return null;
-  }
-
-  const {
-    createdBy,
-    title,
-    description,
-    image,
-    categoryIds,
-    location,
-    startTime,
-    endTime,
-  } = updatedEvent;
-
-  eventData.events[eventIndex] = {
-    ...eventData.events[eventIndex],
-    createdBy: createdBy || eventData.events[eventIndex].createdBy,
-    title: title || eventData.events[eventIndex].title,
-    description: description || eventData.events[eventIndex].description,
-    image: image || eventData.events[eventIndex].image,
-    categoryIds: categoryIds || eventData.events[eventIndex].categoryIds,
-    location: location || eventData.events[eventIndex].location,
-    startTime: startTime || eventData.events[eventIndex].startTime,
-    endTime: endTime || eventData.events[eventIndex].endTime,
-  };
-  return eventData.events[eventIndex];
+const updateEventById = async (id, updatedEvent) => {
+  const prisma = new PrismaClient();
+  const { categoryIds, createdBy, ...rest } = updatedEvent;
+  const event = await prisma.event.update({
+    where: { id },
+    data: {
+      ...rest,
+      createdBy: createdBy ? { connect: { id: createdBy } } : undefined,
+      categories: categoryIds
+        ? {
+            set: categoryIds.map(id => ({ id })),
+          }
+        : undefined,
+    },
+  });
+  return event;
 };
 
 export default updateEventById;

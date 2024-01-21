@@ -1,9 +1,11 @@
-import eventsData from "../../data/events.json" assert { type: "json" };
+import { PrismaClient } from "@prisma/client";
 
-const getEvents = title => {
-  return eventsData.events.filter(event => {
-    return !title || event.title === title;
+const getEvents = async title => {
+  const prisma = new PrismaClient();
+  const events = await prisma.event.findMany({
+    where: { title: { contains: title } },
   });
+  return events;
 };
 
 export default getEvents;

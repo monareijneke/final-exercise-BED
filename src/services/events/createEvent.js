@@ -1,30 +1,34 @@
-import eventData from "../../data/events.json" assert { type: "json" };
-import { v4 as uuid } from "uuid";
+import { PrismaClient } from "@prisma/client";
 
-const createEvent = (
-  createdBy,
+const createEvent = async (
   title,
   description,
   image,
-  categoryIds,
   location,
   startTime,
-  endTime
+  endTime,
+  createdBy,
+  categoryIds
 ) => {
-  const newEvent = {
-    id: uuid(),
-    createdBy,
-    title,
-    description,
-    image,
-    categoryIds,
-    location,
-    startTime,
-    endTime,
-  };
+  const prisma = new PrismaClient();
+  const event = await prisma.event.create({
+    data: {
+      title,
+      description,
+      image,
+      location,
+      startTime,
+      endTime,
+      createdBy: {
+        connect: { id, createdBy },
+      },
+      categories: {
+        connect: categoryIds.map(id => ({ id })),
+      },
+    },
+  });
 
-  eventData.events.push(newEvent);
-  return newEvent;
+  return event;
 };
 
 export default createEvent;
