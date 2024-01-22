@@ -8,50 +8,72 @@ import authMiddleware from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  const users = getUsers();
-  res.json(users);
-});
-
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  const user = getUserById(id);
-
-  if (!user) {
-    res.status(404).json({ message: `User with ID ${id} not found` });
-  } else {
-    res.status(200).json(user);
+router.get("/", async (req, res, next) => {
+  try {
+    const users = await getUsers();
+    res.json(users);
+  } catch (error) {
+    next(error);
   }
 });
 
-router.post("/", authMiddleware, (req, res) => {
-  const { name, password, username, image } = req.body;
-  const newUser = createUser(name, password, username, image);
-  res.status(201).json(newUser);
-});
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
 
-router.delete("/:id", authMiddleware, (req, res) => {
-  const { id } = req.params;
-  const user = deleteUserById(id);
-
-  if (user) {
-    res.status(200).send({ message: `User with ID ${id} succesfully deleted` });
-  } else {
-    res.status(404).json({ message: `User with ID ${id} not found` });
+    if (!user) {
+      res.status(404).json({ message: `User with ID ${id} not found` });
+    } else {
+      res.status(200).json(user);
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
-router.put("/:id", authMiddleware, (req, res) => {
-  const { id } = req.params;
-  const { name, password, username, image } = req.body;
-  const user = updateUserById(id, { name, password, username, image });
+router.post("/", authMiddleware, async (req, res, next) => {
+  try {
+    const { name, password, username, image } = req.body;
+    const newUser = await createUser(name, password, username, image);
+    res.status(201).json(newUser);
+  } catch (error) {
+    next(error);
+  }
+});
 
-  if (user) {
-    res
-      .status(200)
-      .send({ message: `User with id ${id} succesfully updated!` });
-  } else {
-    res.status(404).json({ message: `User with id ${id} not found!` });
+router.delete("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await deleteUserById(id);
+
+    if (user) {
+      res
+        .status(200)
+        .send({ message: `User with ID ${id} succesfully deleted` });
+    } else {
+      res.status(404).json({ message: `User with ID ${id} not found` });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, password, username, image } = req.body;
+    const user = await updateUserById(id, { name, password, username, image });
+
+    if (user) {
+      res
+        .status(200)
+        .send({ message: `User with id ${id} succesfully updated!` });
+    } else {
+      res.status(404).json({ message: `User with id ${id} not found!` });
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
