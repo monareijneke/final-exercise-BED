@@ -1,18 +1,17 @@
-import userData from "../../data/users.json" assert { type: "json" };
-import { v4 as uuid } from "uuid";
+import { PrismaClient } from "@prisma/client";
 
-const createUser = (username, name, password, image) => {
-  const newUser = {
-    id: uuid(),
-    name,
-    username,
-    password,
-    image,
-  };
+const createUser = async (username, name, password, image) => {
+  const prisma = new PrismaClient();
+  const user = await prisma.user.create({
+    data: {
+      name,
+      username,
+      password,
+      image,
+    },
+  });
 
-  userData.users.push(newUser);
-
-  return newUser;
+  return user;
 };
 
 export default createUser;

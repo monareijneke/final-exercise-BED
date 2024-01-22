@@ -1,7 +1,11 @@
-import userData from "../../data/users.json" assert { type: "json" };
+import { PrismaClient } from "@prisma/client";
 
-const getUsers = () => {
-  return userData.users;
+const getUsers = async () => {
+  const prisma = new PrismaClient();
+  const users = await prisma.user.findMany({
+    where: {},
+  });
+  return users;
 };
 
 export default getUsers;
