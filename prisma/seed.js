@@ -43,7 +43,7 @@ async function main() {
           connect: event.categoryIds.map(id => ({ id })),
         },
         createdBy: {
-          connect: { id: event.createdBy },
+          connect: { id: event.userId }, //gewijzigd van createdBy, nog niet getest in postman
         },
       },
     });
