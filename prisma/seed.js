@@ -1,14 +1,28 @@
 import { PrismaClient } from "@prisma/client";
+import bookingData from "../src/data/bookings.json" assert { type: "json" };
+import hostData from "../src/data/hosts.json" assert { type: "json" };
+import propertyData from "../src/data/properties.json" assert { type: "json" };
+import reviewData from "../src/data/reviews.json" assert { type: "json" };
 import userData from "../src/data/users.json" assert { type: "json" };
-import categoryData from "../src/data/categories.json" assert { type: "json" };
-import eventData from "../src/data/events.json" assert { type: "json" };
+import amenityData from "../src/data/amenities.json" assert { type: "json" };
 
 const prisma = new PrismaClient({ log: ["query", "info", "warn", "error"] });
 
 async function main() {
+  const { bookings } = bookingData;
+  const { hosts } = hostData;
+  const { properties } = propertyData;
+  const { reviews } = reviewData;
   const { users } = userData;
-  const { categories } = categoryData;
-  const { events } = eventData;
+  const { amenities } = amenityData;
+
+  for (const host of hosts) {
+    await prisma.host.upsert({
+      where: { id: host.id },
+      update: {},
+      create: host,
+    });
+  }
 
   for (const user of users) {
     await prisma.user.upsert({
@@ -18,32 +32,73 @@ async function main() {
     });
   }
 
-  for (const category of categories) {
-    await prisma.category.upsert({
-      where: { id: category.id },
+  for (const amenity of amenities) {
+    await prisma.amenity.upsert({
+      where: { id: amenity.id },
       update: {},
-      create: category,
+      create: amenity,
     });
   }
 
-  for (const event of events) {
-    //alles copy van solution
-    await prisma.event.upsert({
-      where: { id: event.id },
+  for (const booking of bookings) {
+    await prisma.booking.upsert({
+      where: { id: booking.id },
       update: {},
       create: {
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        image: event.image,
-        location: event.location,
-        startTime: event.startTime,
-        endTime: event.endTime,
-        categories: {
-          connect: event.categoryIds.map(id => ({ id })),
+        id: booking.id,
+        checkinDate: booking.checkinDate,
+        checkoutDate: booking.checkoutDate,
+        numberOfGuests: booking.numberOfGuests,
+        totalPrice: booking.totalPrice,
+        bookingStatus: booking.bookingStatus,
+        userId: booking.userId,
+        propertyId: booking.propertyId,
+      },
+    });
+  }
+
+  for (const property of properties) {
+    const existingAmenities = await prisma.amenity.findMany();
+    const amenitiesToConnect = existingAmenities.filter(amenity =>
+      property.amenitis.includes(amenity.name)
+    );
+    const amenityIds = amenitiesToConnect.map(amenity => ({ id: amenity.id }));
+    await prisma.property.upsert({
+      where: { id: property.id },
+      update: {},
+      create: {
+        id: property.id,
+        title: property.title,
+        description: property.description,
+        location: property.location,
+        pricePerNight: property.pricePerNight,
+        bedroomCount: property.bedroomCount,
+        bathRoomCount: property.bathRoomCount,
+        maxGuestCount: property.maxGuestCount,
+        rating: property.rating,
+        host: {
+          connect: { id: property.hostId },
         },
-        createdBy: {
-          connect: { id: event.userId }, //gewijzigd van createdBy, nog niet getest in postman
+        amenitis: {
+          connect: amenityIds,
+        },
+      },
+    });
+  }
+
+  for (const review of reviews) {
+    await prisma.review.upsert({
+      where: { id: review.id },
+      update: {},
+      create: {
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        user: {
+          connect: { id: review.userId },
+        },
+        property: {
+          connect: { id: review.propertyId },
         },
       },
     });
